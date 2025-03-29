@@ -1,6 +1,6 @@
 from web3 import Web3
 import time
-from src.utils.web3_utils import connect_to_web3, get_balance, get_gas_params, monitor_transaction
+from src.utils import connect_to_web3, get_balance, get_gas_params, monitor_transaction
 
 RPC_ENDPOINT = "https://carrot.megaeth.com/rpc"  # MegaETH testnet RPC
 CHAIN_ID = 6342  # MegaETH testnet chain ID
@@ -82,3 +82,6 @@ def run_transfer():
         print(f"\nProcessing wallet: {account.address}")
         transfer_funds(w3, private_key, target_address)
         time.sleep(0.5)  # Delay between wallets
+
+if __name__ == "__main__":
+    run_transfer()
