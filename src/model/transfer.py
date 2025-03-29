@@ -1,47 +1,69 @@
 from web3 import Web3
 import time
-from src.utils import connect_to_web3, get_balance, get_gas_params, monitor_transaction
 
-RPC_ENDPOINT = "https://carrot.megaeth.com/rpc"  # MegaETH testnet RPC
-CHAIN_ID = 6342  # MegaETH testnet chain ID
+RPC_ENDPOINT = "https://carrot.megaeth.com/rpc"
+CHAIN_ID = 6342
 
-def transfer_funds(w3: Web3, private_key: str, to_address: str) -> None:
-    """Transfer all funds from a wallet to the main wallet, leaving gas cost plus a tiny buffer."""
+def get_balance(w3, account_address: str) -> int:
+    return w3.eth.get_balance(account_address, 'latest')
+
+def get_gas_params(w3) -> dict:
+    try:
+        gas_price = w3.eth.gas_price
+        max_fee_per_gas = max(w3.to_wei(5, 'gwei'), int(gas_price * 1.5))
+        max_priority_fee_per_gas = min(w3.to_wei(2, 'gwei'), max_fee_per_gas)
+        print(f"Gas params: maxFeePerGas={w3.from_wei(max_fee_per_gas, 'gwei')} Gwei, "
+              f"maxPriorityFeePerGas={w3.from_wei(max_priority_fee_per_gas, 'gwei')} Gwei")
+        return {
+            'maxFeePerGas': max_fee_per_gas,
+            'maxPriorityFeePerGas': max_priority_fee_per_gas
+        }
+    except Exception as e:
+        print(f"Error fetching gas params: {e}")
+        return {'gasPrice': w3.to_wei(5, 'gwei')}
+
+def monitor_transaction(w3, tx_hash: str) -> bool:
+    max_attempts = 30
+    for _ in range(max_attempts):
+        try:
+            receipt = w3.eth.get_transaction_receipt(tx_hash)
+            if receipt:
+                print(f"Transaction {tx_hash} confirmed in block {receipt['blockNumber']}")
+                return receipt['status'] == 1
+        except:
+            print(f"Waiting for transaction {tx_hash} to be confirmed...")
+            time.sleep(0.5)
+    print(f"Transaction {tx_hash} not confirmed after {max_attempts} attempts")
+    return False
+
+def transfer_funds(private_key: str, to_address: str) -> None:
+    w3 = Web3(Web3.HTTPProvider(RPC_ENDPOINT))
+    if not w3.is_connected():
+        raise Exception("Failed to connect to MegaETH testnet RPC")
+
     account = w3.eth.account.from_key(private_key)
     from_address = account.address
+    print(f"\nProcessing wallet: {from_address}")
 
-    # Get the current balance
     balance = get_balance(w3, from_address)
-    print(f"Balance of {from_address}: {balance} Wei ({w3.from_wei(balance, 'ether')} ETH)")
-
+    print(f"Balance: {w3.from_wei(balance, 'ether')} ETH")
     if balance <= 0:
-        print(f"No funds to transfer from {from_address}")
+        print(f"No funds to transfer")
         return
 
-    # Get gas parameters
     gas_params = get_gas_params(w3)
-    gas_limit = 21000  # Standard gas limit for a simple transfer
-
-    # Estimate gas cost
+    gas_limit = 21000
     gas_cost_estimate = gas_params.get('maxFeePerGas', gas_params.get('gasPrice')) * gas_limit
-    print(f"Estimated gas cost: {gas_cost_estimate} Wei ({w3.from_wei(gas_cost_estimate, 'ether')} ETH)")
-
-    # Add a tiny buffer (1 Gwei worth) to avoid edge-case rejection
-    buffer = w3.to_wei(1, 'gwei')  # 0.000001 ETH
+    buffer = w3.to_wei(1, 'gwei')
     total_cost = gas_cost_estimate + buffer
 
-    # Check if balance is sufficient for gas + buffer
     if balance <= total_cost:
-        print(f"Insufficient funds for gas + buffer in {from_address}. Required: {w3.from_wei(total_cost, 'ether')} ETH")
+        print(f"Insufficient funds for gas + buffer")
         return
 
-    # Calculate amount to send (all funds minus gas cost and buffer)
     amount_to_send = balance - total_cost
-    # No minimum amount check - allow even 1 Wei to be sent
+    print(f"Amount to send: {w3.from_wei(amount_to_send, 'ether')} ETH")
 
-    print(f"Amount to send: {amount_to_send} Wei ({w3.from_wei(amount_to_send, 'ether')} ETH)")
-
-    # Build the transaction
     nonce = w3.eth.get_transaction_count(from_address, 'pending')
     tx = {
         'nonce': nonce,
@@ -52,36 +74,13 @@ def transfer_funds(w3: Web3, private_key: str, to_address: str) -> None:
         **gas_params
     }
 
-    # Sign and send the transaction
     try:
         signed_tx = w3.eth.account.sign_transaction(tx, private_key)
-        tx_hash = w3.eth.send_raw_transaction(signed_tx.raw_transaction)
-        tx_hash_hex = w3.to_hex(tx_hash)
-        print(f"Transaction sent from {from_address} to {to_address}. Tx Hash: {tx_hash_hex}")
-        
-        # Monitor transaction
-        success = monitor_transaction(w3, tx_hash_hex)
-        if success:
-            print(f"Successfully transferred funds from {from_address}")
+        tx_hash = w3.to_hex(w3.eth.send_raw_transaction(signed_tx.raw_transaction))
+        print(f"Tx Hash: {tx_hash}")
+        if monitor_transaction(w3, tx_hash):
+            print(f"Success: Funds transferred from {from_address}")
         else:
-            print(f"Transaction from {from_address} failed")
+            print(f"Failed: Transaction from {from_address}")
     except Exception as e:
-        print(f"Error sending transaction from {from_address}: {str(e)}")
-
-def run_transfer():
-    """Run the transfer process."""
-    w3 = connect_to_web3(RPC_ENDPOINT)
-    with open('data/target_address.txt', 'r') as f:
-        target_address = f.read().strip()
-    with open('data/private_keys.txt', 'r') as f:
-        source_wallets = [line.strip() for line in f.readlines() if line.strip()]
-
-    print("Running Transfer Mode: private_keys.txt to target_address.txt")
-    for private_key in source_wallets:
-        account = w3.eth.account.from_key(private_key)
-        print(f"\nProcessing wallet: {account.address}")
-        transfer_funds(w3, private_key, target_address)
-        time.sleep(0.5)  # Delay between wallets
-
-if __name__ == "__main__":
-    run_transfer()
+        print(f"Error: {str(e)}")
