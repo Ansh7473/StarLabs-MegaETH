@@ -81,6 +81,4 @@ def transfer_funds(private_key: str, to_address: str) -> None:
         if monitor_transaction(w3, tx_hash):
             print(f"Success: Funds transferred from {from_address}")
         else:
-            print(f"Failed: Transaction from {from_address}")
-    except Exception as e:
-        print(f"Error: {str(e)}")
+            print(f"Failed
