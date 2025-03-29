@@ -1,54 +1,75 @@
 from web3 import Web3
 import time
-from src.utils import connect_to_web3, get_balance, get_gas_params, monitor_transaction
+from typing import List
 
-RPC_ENDPOINT = "https://carrot.megaeth.com/rpc"  # MegaETH testnet RPC
-CHAIN_ID = 6342  # MegaETH testnet chain ID
+RPC_ENDPOINT = "https://carrot.megaeth.com/rpc"
+CHAIN_ID = 6342
 
-def disperse_funds(w3: Web3, sender_private_key: str, recipient_private_keys: list) -> None:
-    """Disperse a user-chosen amount from one wallet to all recipient wallets."""
+def get_balance(w3, account_address: str) -> int:
+    return w3.eth.get_balance(account_address, 'latest')
+
+def get_gas_params(w3) -> dict:
+    try:
+        gas_price = w3.eth.gas_price
+        max_fee_per_gas = max(w3.to_wei(5, 'gwei'), int(gas_price * 1.5))
+        max_priority_fee_per_gas = min(w3.to_wei(2, 'gwei'), max_fee_per_gas)
+        print(f"Gas params: maxFeePerGas={w3.from_wei(max_fee_per_gas, 'gwei')} Gwei, "
+              f"maxPriorityFeePerGas={w3.from_wei(max_priority_fee_per_gas, 'gwei')} Gwei")
+        return {
+            'maxFeePerGas': max_fee_per_gas,
+            'maxPriorityFeePerGas': max_priority_fee_per_gas
+        }
+    except Exception as e:
+        print(f"Error fetching gas params: {e}")
+        return {'gasPrice': w3.to_wei(5, 'gwei')}
+
+def monitor_transaction(w3, tx_hash: str) -> bool:
+    max_attempts = 30
+    for _ in range(max_attempts):
+        try:
+            receipt = w3.eth.get_transaction_receipt(tx_hash)
+            if receipt:
+                print(f"Transaction {tx_hash} confirmed in block {receipt['blockNumber']}")
+                return receipt['status'] == 1
+        except:
+            print(f"Waiting for transaction {tx_hash} to be confirmed...")
+            time.sleep(0.5)
+    print(f"Transaction {tx_hash} not confirmed after {max_attempts} attempts")
+    return False
+
+def disperse_funds(sender_private_key: str, recipient_keys: List[str], amount_per_wallet_eth: float) -> None:
+    w3 = Web3(Web3.HTTPProvider(RPC_ENDPOINT))
+    if not w3.is_connected():
+        raise Exception("Failed to connect to MegaETH testnet RPC")
+
     sender_account = w3.eth.account.from_key(sender_private_key)
     sender_address = sender_account.address
     print(f"\nDispersing funds from wallet: {sender_address}")
 
-    # Get sender balance
     balance = get_balance(w3, sender_address)
-    print(f"Balance of {sender_address}: {balance} Wei ({w3.from_wei(balance, 'ether')} ETH)")
-
+    print(f"Balance: {w3.from_wei(balance, 'ether')} ETH")
     if balance <= 0:
         print(f"No funds to disperse from {sender_address}")
         return
 
-    # Get user input for amount to send to each wallet (in ETH)
-    try:
-        amount_per_wallet_eth = float(input("Enter amount to send to each wallet (in ETH): "))
-        amount_per_wallet_wei = w3.to_wei(amount_per_wallet_eth, 'ether')
-    except ValueError:
-        print("Invalid input: Please enter a valid number")
-        return
-
-    # Calculate total cost (amount per wallet * number of recipients + gas costs)
+    amount_per_wallet_wei = w3.to_wei(amount_per_wallet_eth, 'ether')
     gas_params = get_gas_params(w3)
     gas_limit = 21000
     gas_cost_estimate = gas_params.get('maxFeePerGas', gas_params.get('gasPrice')) * gas_limit
-    total_gas_cost = gas_cost_estimate * len(recipient_private_keys)
-    total_amount_to_send = amount_per_wallet_wei * len(recipient_private_keys)
+    total_gas_cost = gas_cost_estimate * len(recipient_keys)
+    total_amount_to_send = amount_per_wallet_wei * len(recipient_keys)
     total_required = total_amount_to_send + total_gas_cost
 
     if balance < total_required:
-        print(f"Insufficient funds in {sender_address}. Required: {w3.from_wei(total_required, 'ether')} ETH")
+        print(f"Insufficient funds. Required: {w3.from_wei(total_required, 'ether')} ETH")
         return
 
-    # Disperse funds to each wallet
     nonce = w3.eth.get_transaction_count(sender_address, 'pending')
-    for recipient_private_key in recipient_private_keys:
-        recipient_account = w3.eth.account.from_key(recipient_private_key)
+    for recipient_key in recipient_keys:
+        recipient_account = w3.eth.account.from_key(recipient_key)
         recipient_address = recipient_account.address
+        print(f"\nSending to {recipient_address}: {amount_per_wallet_eth} ETH")
 
-        print(f"\nSending to {recipient_address}")
-        print(f"Amount to send: {amount_per_wallet_wei} Wei ({w3.from_wei(amount_per_wallet_wei, 'ether')} ETH)")
-
-        # Build the transaction
         tx = {
             'nonce': nonce,
             'to': recipient_address,
@@ -58,35 +79,16 @@ def disperse_funds(w3: Web3, sender_private_key: str, recipient_private_keys: li
             **gas_params
         }
 
-        # Sign and send
         try:
             signed_tx = w3.eth.account.sign_transaction(tx, sender_private_key)
-            tx_hash = w3.eth.send_raw_transaction(signed_tx.raw_transaction)
-            tx_hash_hex = w3.to_hex(tx_hash)
-            print(f"Transaction sent from {sender_address} to {recipient_address}. Tx Hash: {tx_hash_hex}")
-
-            # Monitor transaction
-            success = monitor_transaction(w3, tx_hash_hex)
-            if success:
-                print(f"Successfully sent {w3.from_wei(amount_per_wallet_wei, 'ether')} ETH to {recipient_address}")
+            tx_hash = w3.to_hex(w3.eth.send_raw_transaction(signed_tx.raw_transaction))
+            print(f"Tx Hash: {tx_hash}")
+            if monitor_transaction(w3, tx_hash):
+                print(f"Success: {amount_per_wallet_eth} ETH sent to {recipient_address}")
             else:
-                print(f"Transaction to {recipient_address} failed")
+                print(f"Failed: Transaction to {recipient_address}")
         except Exception as e:
-            print(f"Error sending transaction to {recipient_address}: {str(e)}")
+            print(f"Error: {str(e)}")
 
-        nonce += 1  # Increment nonce for the next transaction
-        time.sleep(0.5)  # Delay between transactions
-
-def run_disperse():
-    """Run the disperse process."""
-    w3 = connect_to_web3(RPC_ENDPOINT)
-    with open('data/wallet.txt', 'r') as f:
-        sender_private_key = f.read().strip()
-    with open('data/recipient_wallets.txt', 'r') as f:
-        recipient_wallets = [line.strip() for line in f.readlines() if line.strip()]
-
-    print("Running Disperse Mode: wallet.txt to recipient_wallets.txt")
-    disperse_funds(w3, sender_private_key, recipient_wallets)
-
-if __name__ == "__main__":
-    run_disperse()
+        nonce += 1
+        time.sleep(0.5)
