@@ -1,6 +1,6 @@
 from web3 import Web3
 import time
-from src.utils.web3_utils import connect_to_web3, get_balance, get_gas_params, monitor_transaction
+from src.utils import connect_to_web3, get_balance, get_gas_params, monitor_transaction
 
 RPC_ENDPOINT = "https://carrot.megaeth.com/rpc"  # MegaETH testnet RPC
 CHAIN_ID = 6342  # MegaETH testnet chain ID
@@ -87,3 +87,6 @@ def run_disperse():
 
     print("Running Disperse Mode: wallet.txt to recipient_wallets.txt")
     disperse_funds(w3, sender_private_key, recipient_wallets)
+
+if __name__ == "__main__":
+    run_disperse()
