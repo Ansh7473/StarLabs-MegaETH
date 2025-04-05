@@ -1,7 +1,7 @@
 TASKS = ["CRUSTY_SWAP"]
 
 
-FAUCET = ["faucet"]
+FAUCET = ["faucet", "teko_faucet"]
 
 CRUSTY_SWAP = [
     # "cex_withdrawal",
@@ -15,6 +15,9 @@ GTE_SWAPS = ["gte_swaps"]
 TEKO_FINANCE = ["teko_faucet", "teko_finance"]
 ONCHAIN_GM = ["onchain_gm"]
 XL_MEME = ["xl_meme"]
+OMNIHUB = ["omnihub"]
+MINTAIR = ["mintair"]
+EASYNODE = ["easynode"]
 
 """
 EN:
@@ -73,5 +76,7 @@ gte_swaps - trade tokens at https://testnet.gte.xyz/
 teko_finance - stake tkUSDC at https://app.teko.finance/
 onchain_gm - mint GM at https://onchaingm.com/
 xl_meme - buy memetokens at https://testnet.xlmeme.com/megaeth
-
+omnihub - mint NFT at https://omnihub.xyz/collections?chain=megaeth-testnet&sort_by=trending
+mintair - deploy timer contract at https://contracts.mintair.xyz/
+easynode - deploy counter contract at https://playground.easy-node.xyz/
 """

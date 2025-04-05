@@ -71,6 +71,11 @@ class XLMemeConfig:
 
 
 @dataclass
+class OmniHubConfig:
+    MAX_PRICE_TO_MINT: float
+
+
+@dataclass
 class SwapsConfig:
     BEBOP: BebopConfig
     GTE: GteConfig
@@ -83,7 +88,7 @@ class StakingsConfig:
 @dataclass
 class MintsConfig:
     XL_MEME: XLMemeConfig
-
+    OMNIHUB: OmniHubConfig
 
 @dataclass
 class WalletInfo:
@@ -239,6 +244,9 @@ class Config:
                         "BALANCE_PERCENTAGE_TO_BUY"
                     ],
                     CONTRACTS_TO_BUY=data["MINTS"]["XL_MEME"]["CONTRACTS_TO_BUY"],
+                ),
+                OMNIHUB=OmniHubConfig(
+                    MAX_PRICE_TO_MINT=data["MINTS"]["OMNIHUB"]["MAX_PRICE_TO_MINT"],
                 ),
             ),
             EXCHANGES=ExchangesConfig(

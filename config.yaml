@@ -23,20 +23,20 @@ SETTINGS:
     SHUFFLE_WALLETS: true
 
     # pause between attempts
-    PAUSE_BETWEEN_ATTEMPTS: [3, 10]
+    PAUSE_BETWEEN_ATTEMPTS: [3, 15]
     
     # pause between swaps
-    PAUSE_BETWEEN_SWAPS: [5, 30]
+    PAUSE_BETWEEN_SWAPS: [3, 15]
     
     # pause in seconds between accounts
-    RANDOM_PAUSE_BETWEEN_ACCOUNTS: [5, 30]
+    RANDOM_PAUSE_BETWEEN_ACCOUNTS: [3, 15]
     
     # pause in seconds between actions
-    RANDOM_PAUSE_BETWEEN_ACTIONS: [5, 30]
+    RANDOM_PAUSE_BETWEEN_ACTIONS: [3, 15]
     
     # random pause before start of every account
     # to make sure that all accounts will be started at different times
-    RANDOM_INITIALIZATION_PAUSE: [5, 60]
+    RANDOM_INITIALIZATION_PAUSE: [5, 40]
     
     # if true, bot will send logs to telegram
     SEND_TELEGRAM_LOGS: false
@@ -56,7 +56,7 @@ FLOW:
 
 FAUCET:
     # CHEAPEST CAPTCHA SOLVER - https://t.me/solvium_crypto_bot
-    SOLVIUM_API_KEY: xxxxxxxxxxxxxxxxxx
+    SOLVIUM_API_KEY: xxxxxxxxxxxxxxxxxxxxxxx
 
     USE_CAPSOLVER: false
     CAPSOLVER_API_KEY: CAP-xxxxxxxxxxxxxxxx
@@ -96,6 +96,10 @@ MINTS:
         BALANCE_PERCENTAGE_TO_BUY: [2, 5]
         # contracts of meme tokens to buy
         CONTRACTS_TO_BUY: []
+
+    OMNIHUB:
+        # max price of NFT to mint
+        MAX_PRICE_TO_MINT: 0.00011
 
 
 CRUSTY_SWAP:

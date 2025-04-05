@@ -1,4 +1,5 @@
 EXPLORER_URL_MEGAETH = "https://www.megaexplorer.xyz/tx/0x"
+MAIN_EXPLORER_URL_MEGAETH = "https://www.megaexplorer.xyz/"
 
 BALANCE_CHECKER_CONTRACT_ADDRESS = "0xB3F92147102bc11D758F13983443950931e76D8F"   
 

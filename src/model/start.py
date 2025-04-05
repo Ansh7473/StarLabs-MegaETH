@@ -4,6 +4,9 @@ import primp
 import random
 import asyncio
 
+from src.model.projects.deploy.easynode.instance import EasyNode
+from src.model.projects.deploy.mintair.instance import Mintair
+from src.model.projects.mints.omnihub.instance import OmniHub
 from src.model.offchain.cex.instance import CexWithdraw
 from src.model.onchain.bridges.crusty_swap.instance import CrustySwap
 from src.model.projects.mints.xl_meme.instance import XLMeme
@@ -41,7 +44,6 @@ class Start:
 
         self.wallet = Account.from_key(self.private_key)
         self.wallet_address = self.wallet.address
-        
 
     async def initialize(self):
         try:
@@ -291,17 +293,18 @@ class Start:
             return await crusty_swap.refuel()
         
         if task == "crusty_refuel_from_one_to_all":
+            private_keys = read_private_keys("data/private_keys.txt")
+
             crusty_swap = CrustySwap(
                 1,
                 self.session,
                 self.megaeth_web3,
                 self.config,
-                Account.from_key(self.private_keys[0]),
+                Account.from_key(private_keys[0]),
                 self.proxy,
-                self.private_keys[0],
+                private_keys[0],
             )
-            all_private_keys = read_private_keys("data/private_keys.txt")
-            private_keys = all_private_keys[1:]
+            private_keys = private_keys[1:]
             return await crusty_swap.refuel_from_one_to_all(private_keys)
         
         elif task == "cex_withdrawal":
@@ -332,6 +335,37 @@ class Start:
             )
             return await gte_faucet.faucet()
 
+        
+        if task == "omnihub":
+            omnihub = OmniHub(
+                self.account_index,
+                self.session,
+                self.megaeth_web3,
+                self.config,
+                self.wallet,
+            )
+            return await omnihub.mint()
+        
+        if task == "mintair":
+            mintair = Mintair(
+                self.account_index,
+                self.session,
+                self.megaeth_web3,
+                self.config,
+                self.wallet,
+            )
+            return await mintair.deploy_timer_contract()
+        
+        if task == "easynode":
+            easynode = EasyNode(
+                self.account_index,
+                self.session,
+                self.megaeth_web3,
+                self.config,
+                self.wallet,
+            )
+            return await easynode.deploy_contract()
+        
         logger.error(f"{self.account_index} | Task {task} not found")
         return False
 

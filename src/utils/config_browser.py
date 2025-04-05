@@ -1539,7 +1539,7 @@ function renderConfig(config) {
                 createCard(cardsContainer, 'Captcha Solvers', 'puzzle-piece', [
                     { key: 'SOLVIUM_API_KEY', value: config[key]['SOLVIUM_API_KEY'] },
                     { key: 'USE_CAPSOLVER', value: config[key]['USE_CAPSOLVER'] },
-                    { key: 'CAPSOLVER_API_KEY', value: config[key]['CAPSOLVER_API_KEY'] },
+                    { key: 'CAPSOLVER_API_KEY', value: config[key]['CAPSOLVER_API_KEY'] }
                 ], key);
             } else if (key === 'RPCS') {
                 // Специальная обработка для RPCs
@@ -1609,6 +1609,18 @@ function renderConfig(config) {
                             isList: Array.isArray(v) && k === 'CONTRACTS_TO_BUY'
                         })), 
                         `${key}.XL_MEME`
+                    );
+                }
+
+                // OMNIHUB
+                if (config[key]['OMNIHUB']) {
+                    createCard(cardsContainer, 'OmniHub Settings', 'cube', 
+                        Object.entries(config[key]['OMNIHUB']).map(([k, v]) => ({ 
+                            key: k, 
+                            value: v, 
+                            isNumber: typeof v === 'number' && !Array.isArray(v)
+                        })), 
+                        `${key}.OMNIHUB`
                     );
                 }
             } else if (key === 'CRUSTY_SWAP') {
