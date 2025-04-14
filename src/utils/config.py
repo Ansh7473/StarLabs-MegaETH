@@ -52,11 +52,13 @@ class BebopConfig:
     BALANCE_PERCENTAGE_TO_SWAP: List[int]
     SWAP_ALL_TO_ETH: bool
 
+
 @dataclass
 class GteConfig:
     BALANCE_PERCENTAGE_TO_SWAP: List[int]
     SWAP_ALL_TO_ETH: bool
     SWAPS_AMOUNT: List[int]
+
 
 @dataclass
 class TekoFinanceConfig:
@@ -71,6 +73,12 @@ class XLMemeConfig:
 
 
 @dataclass
+class RainmakrConfig:
+    AMOUNT_OF_ETH_TO_BUY: List[float]
+    CONTRACTS_TO_BUY: List[str]
+
+
+@dataclass
 class OmniHubConfig:
     MAX_PRICE_TO_MINT: float
 
@@ -79,6 +87,7 @@ class OmniHubConfig:
 class SwapsConfig:
     BEBOP: BebopConfig
     GTE: GteConfig
+
 
 @dataclass
 class StakingsConfig:
@@ -89,6 +98,8 @@ class StakingsConfig:
 class MintsConfig:
     XL_MEME: XLMemeConfig
     OMNIHUB: OmniHubConfig
+    RAINMAKR: RainmakrConfig
+
 
 @dataclass
 class WalletInfo:
@@ -102,6 +113,7 @@ class WalletInfo:
 @dataclass
 class WalletsConfig:
     wallets: List[WalletInfo] = field(default_factory=list)
+
 
 @dataclass
 class CrustySwapConfig:
@@ -133,7 +145,6 @@ class ExchangesConfig:
     secretKey: str
     passphrase: str  # Only needed for OKX
     withdrawals: List[WithdrawalConfig]
-
 
 
 @dataclass
@@ -223,7 +234,9 @@ class Config:
                     SWAP_ALL_TO_ETH=data["SWAPS"]["BEBOP"]["SWAP_ALL_TO_ETH"],
                 ),
                 GTE=GteConfig(
-                    BALANCE_PERCENTAGE_TO_SWAP=data["SWAPS"]["GTE"]["BALANCE_PERCENTAGE_TO_SWAP"],
+                    BALANCE_PERCENTAGE_TO_SWAP=data["SWAPS"]["GTE"][
+                        "BALANCE_PERCENTAGE_TO_SWAP"
+                    ],
                     SWAP_ALL_TO_ETH=data["SWAPS"]["GTE"]["SWAP_ALL_TO_ETH"],
                     SWAPS_AMOUNT=data["SWAPS"]["GTE"]["SWAPS_AMOUNT"],
                 ),
@@ -248,6 +261,12 @@ class Config:
                 OMNIHUB=OmniHubConfig(
                     MAX_PRICE_TO_MINT=data["MINTS"]["OMNIHUB"]["MAX_PRICE_TO_MINT"],
                 ),
+                RAINMAKR=RainmakrConfig(
+                    AMOUNT_OF_ETH_TO_BUY=data["MINTS"]["RAINMAKR"][
+                        "AMOUNT_OF_ETH_TO_BUY"
+                    ],
+                    CONTRACTS_TO_BUY=data["MINTS"]["RAINMAKR"]["CONTRACTS_TO_BUY"],
+                ),
             ),
             EXCHANGES=ExchangesConfig(
                 name=data["EXCHANGES"]["name"],
@@ -263,20 +282,26 @@ class Config:
                         wait_for_funds=w["wait_for_funds"],
                         max_wait_time=w["max_wait_time"],
                         retries=w["retries"],
-                        max_balance=w["max_balance"]
-                    ) for w in data["EXCHANGES"]["withdrawals"]
-                ]
+                        max_balance=w["max_balance"],
+                    )
+                    for w in data["EXCHANGES"]["withdrawals"]
+                ],
             ),
             CRUSTY_SWAP=CrustySwapConfig(
                 NETWORKS_TO_REFUEL_FROM=data["CRUSTY_SWAP"]["NETWORKS_TO_REFUEL_FROM"],
                 AMOUNT_TO_REFUEL=tuple(data["CRUSTY_SWAP"]["AMOUNT_TO_REFUEL"]),
-                MINIMUM_BALANCE_TO_REFUEL=data["CRUSTY_SWAP"]["MINIMUM_BALANCE_TO_REFUEL"],
-                WAIT_FOR_FUNDS_TO_ARRIVE=data["CRUSTY_SWAP"]["WAIT_FOR_FUNDS_TO_ARRIVE"],
+                MINIMUM_BALANCE_TO_REFUEL=data["CRUSTY_SWAP"][
+                    "MINIMUM_BALANCE_TO_REFUEL"
+                ],
+                WAIT_FOR_FUNDS_TO_ARRIVE=data["CRUSTY_SWAP"][
+                    "WAIT_FOR_FUNDS_TO_ARRIVE"
+                ],
                 MAX_WAIT_TIME=data["CRUSTY_SWAP"]["MAX_WAIT_TIME"],
                 BRIDGE_ALL=data["CRUSTY_SWAP"]["BRIDGE_ALL"],
                 BRIDGE_ALL_MAX_AMOUNT=data["CRUSTY_SWAP"]["BRIDGE_ALL_MAX_AMOUNT"],
             ),
         )
+
 
 # Singleton pattern
 def get_config() -> Config:

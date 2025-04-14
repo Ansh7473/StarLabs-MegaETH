@@ -23,20 +23,20 @@ SETTINGS:
     SHUFFLE_WALLETS: true
 
     # pause between attempts
-    PAUSE_BETWEEN_ATTEMPTS: [3, 15]
+    PAUSE_BETWEEN_ATTEMPTS: [3, 10]
     
     # pause between swaps
-    PAUSE_BETWEEN_SWAPS: [3, 15]
+    PAUSE_BETWEEN_SWAPS: [3, 10]
     
     # pause in seconds between accounts
-    RANDOM_PAUSE_BETWEEN_ACCOUNTS: [3, 15]
+    RANDOM_PAUSE_BETWEEN_ACCOUNTS: [3, 10]
     
     # pause in seconds between actions
-    RANDOM_PAUSE_BETWEEN_ACTIONS: [3, 15]
+    RANDOM_PAUSE_BETWEEN_ACTIONS: [3, 10]
     
     # random pause before start of every account
     # to make sure that all accounts will be started at different times
-    RANDOM_INITIALIZATION_PAUSE: [5, 40]
+    RANDOM_INITIALIZATION_PAUSE: [5, 30]
     
     # if true, bot will send logs to telegram
     SEND_TELEGRAM_LOGS: false
@@ -56,7 +56,7 @@ FLOW:
 
 FAUCET:
     # CHEAPEST CAPTCHA SOLVER - https://t.me/solvium_crypto_bot
-    SOLVIUM_API_KEY: xxxxxxxxxxxxxxxxxxxxxxx
+    SOLVIUM_API_KEY: xxxxxxxxxxxxxxxxxxxxxx
 
     USE_CAPSOLVER: false
     CAPSOLVER_API_KEY: CAP-xxxxxxxxxxxxxxxx
@@ -68,7 +68,7 @@ RPCS:
 OTHERS:
     SKIP_SSL_VERIFICATION: true
     USE_PROXY_FOR_RPC: true
-  
+    ENABLE_BROWSER_DASHBOARD: true
 
 SWAPS:
     BEBOP:
@@ -100,6 +100,13 @@ MINTS:
     OMNIHUB:
         # max price of NFT to mint
         MAX_PRICE_TO_MINT: 0.00011
+
+    RAINMAKR:
+        # amount of ETH to buy meme token.
+        # MINIMUM IS 0.00013
+        AMOUNT_OF_ETH_TO_BUY: [0.00013, 0.00015]
+        # contracts of meme tokens to buy. if empty, bot will buy random token
+        CONTRACTS_TO_BUY: []
 
 
 CRUSTY_SWAP:

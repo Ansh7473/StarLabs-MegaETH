@@ -72,12 +72,12 @@ def load_config():
                     "ATTEMPTS": 5,
                     "ACCOUNTS_RANGE": [0, 0],
                     "EXACT_ACCOUNTS_TO_USE": [],
-                    "SHUFFLE_WALLETS": False,
-                    "PAUSE_BETWEEN_ATTEMPTS": [0, 0],
-                    "PAUSE_BETWEEN_SWAPS": [0, 0],
-                    "RANDOM_PAUSE_BETWEEN_ACCOUNTS": [0, 0],
-                    "RANDOM_PAUSE_BETWEEN_ACTIONS": [0, 0],
-                    "RANDOM_INITIALIZATION_PAUSE": [0, 0],
+                    "SHUFFLE_WALLETS": True,
+                    "PAUSE_BETWEEN_ATTEMPTS": [3, 10],
+                    "PAUSE_BETWEEN_SWAPS": [3, 10],
+                    "RANDOM_PAUSE_BETWEEN_ACCOUNTS": [3, 10],
+                    "RANDOM_PAUSE_BETWEEN_ACTIONS": [3, 10],
+                    "RANDOM_INITIALIZATION_PAUSE": [5, 30],
                     "SEND_TELEGRAM_LOGS": False,
                     "TELEGRAM_BOT_TOKEN": "",
                     "TELEGRAM_USERS_IDS": [],
@@ -120,7 +120,8 @@ def load_config():
             if "OTHERS" in config:
                 others_defaults = {
                     "SKIP_SSL_VERIFICATION": True,
-                    "USE_PROXY_FOR_RPC": False,
+                    "USE_PROXY_FOR_RPC": True,
+                    "ENABLE_BROWSER_DASHBOARD": True,
                 }
 
                 for key, default_value in others_defaults.items():
@@ -167,9 +168,9 @@ def load_config():
                 config["STAKINGS"]["TEKO_FINANCE"] = {}
 
             teko_finance_defaults = {
-                "CHANCE_FOR_MINT_TOKENS": 0,
+                "CHANCE_FOR_MINT_TOKENS": 50,
                 "BALANCE_PERCENTAGE_TO_STAKE": [5, 10],
-                "UNSTAKE": True,
+                "UNSTAKE": False,
             }
 
             for key, default_value in teko_finance_defaults.items():
@@ -185,13 +186,38 @@ def load_config():
                 config["MINTS"]["XL_MEME"] = {}
 
             xl_meme_defaults = {
-                "BALANCE_PERCENTAGE_TO_BUY": [10, 20],
+                "BALANCE_PERCENTAGE_TO_BUY": [2, 5],
                 "CONTRACTS_TO_BUY": [],
             }
 
             for key, default_value in xl_meme_defaults.items():
                 if key not in config["MINTS"]["XL_MEME"]:
                     config["MINTS"]["XL_MEME"][key] = default_value
+
+            # Ensure OMNIHUB section exists in MINTS
+            if "OMNIHUB" not in config["MINTS"]:
+                config["MINTS"]["OMNIHUB"] = {}
+
+            omnihub_defaults = {
+                "MAX_PRICE_TO_MINT": 0.00011,
+            }
+
+            for key, default_value in omnihub_defaults.items():
+                if key not in config["MINTS"]["OMNIHUB"]:
+                    config["MINTS"]["OMNIHUB"][key] = default_value
+
+            # Ensure RAINMAKR section exists in MINTS
+            if "RAINMAKR" not in config["MINTS"]:
+                config["MINTS"]["RAINMAKR"] = {}
+
+            rainmakr_defaults = {
+                "AMOUNT_OF_ETH_TO_BUY": [0.00013, 0.00015],
+                "CONTRACTS_TO_BUY": [],
+            }
+
+            for key, default_value in rainmakr_defaults.items():
+                if key not in config["MINTS"]["RAINMAKR"]:
+                    config["MINTS"]["RAINMAKR"][key] = default_value
 
             # Ensure CRUSTY_SWAP has required fields
             if "CRUSTY_SWAP" not in config:
@@ -202,7 +228,7 @@ def load_config():
                 "AMOUNT_TO_REFUEL": [0.0001, 0.00015],
                 "MINIMUM_BALANCE_TO_REFUEL": 99999,
                 "WAIT_FOR_FUNDS_TO_ARRIVE": True,
-                "MAX_WAIT_TIME": 99999,
+                "MAX_WAIT_TIME": 999999,
                 "BRIDGE_ALL": False,
                 "BRIDGE_ALL_MAX_AMOUNT": 0.01,
             }
@@ -253,18 +279,218 @@ def load_config():
 def save_config(config):
     """Сохранение конфигурации в YAML файл"""
     try:
-        # Убедимся, что раздел FAUCET существует и содержит все необходимые поля
+        # Проверяем наличие всех необходимых разделов
+        required_sections = [
+            "SETTINGS",
+            "FLOW",
+            "FAUCET",
+            "RPCS",
+            "OTHERS",
+            "SWAPS",
+            "STAKINGS",
+            "MINTS",
+            "EXCHANGES",
+            "CRUSTY_SWAP",
+        ]
+        for section in required_sections:
+            if section not in config:
+                config[section] = {}
+
+        # Убедимся, что раздел SETTINGS содержит все необходимые поля
+        if "SETTINGS" in config:
+            settings_defaults = {
+                "THREADS": 1,
+                "ATTEMPTS": 5,
+                "ACCOUNTS_RANGE": [0, 0],
+                "EXACT_ACCOUNTS_TO_USE": [],
+                "SHUFFLE_WALLETS": True,
+                "PAUSE_BETWEEN_ATTEMPTS": [3, 10],
+                "PAUSE_BETWEEN_SWAPS": [3, 10],
+                "RANDOM_PAUSE_BETWEEN_ACCOUNTS": [3, 10],
+                "RANDOM_PAUSE_BETWEEN_ACTIONS": [3, 10],
+                "RANDOM_INITIALIZATION_PAUSE": [5, 30],
+                "SEND_TELEGRAM_LOGS": False,
+                "TELEGRAM_BOT_TOKEN": "",
+                "TELEGRAM_USERS_IDS": [],
+                "WAIT_FOR_TRANSACTION_CONFIRMATION_IN_SECONDS": 120,
+            }
+            for key, default_value in settings_defaults.items():
+                if key not in config["SETTINGS"]:
+                    config["SETTINGS"][key] = default_value
+
+        # Убедимся, что раздел FLOW содержит все необходимые поля
+        if "FLOW" in config:
+            flow_defaults = {"SKIP_FAILED_TASKS": False}
+            for key, default_value in flow_defaults.items():
+                if key not in config["FLOW"]:
+                    config["FLOW"][key] = default_value
+
+        # Убедимся, что раздел FAUCET содержит все необходимые поля
         if "FAUCET" not in config:
             config["FAUCET"] = {}
 
-        if "SOLVIUM_API_KEY" not in config["FAUCET"]:
-            config["FAUCET"]["SOLVIUM_API_KEY"] = ""
+        faucet_defaults = {
+            "SOLVIUM_API_KEY": "",
+            "USE_CAPSOLVER": False,
+            "CAPSOLVER_API_KEY": "",
+        }
+        for key, default_value in faucet_defaults.items():
+            if key not in config["FAUCET"]:
+                config["FAUCET"][key] = default_value
 
-        if "USE_CAPSOLVER" not in config["FAUCET"]:
-            config["FAUCET"]["USE_CAPSOLVER"] = False
+        # Убедимся, что раздел RPCS содержит все необходимые поля
+        if "RPCS" not in config:
+            config["RPCS"] = {}
 
-        if "CAPSOLVER_API_KEY" not in config["FAUCET"]:
-            config["FAUCET"]["CAPSOLVER_API_KEY"] = ""
+        rpcs_defaults = {"MEGAETH": ["https://carrot.megaeth.com/rpc"]}
+        for key, default_value in rpcs_defaults.items():
+            if key not in config["RPCS"]:
+                config["RPCS"][key] = default_value
+
+        # Убедимся, что раздел OTHERS содержит все необходимые поля
+        if "OTHERS" not in config:
+            config["OTHERS"] = {}
+
+        others_defaults = {
+            "SKIP_SSL_VERIFICATION": True,
+            "USE_PROXY_FOR_RPC": True,
+            "ENABLE_BROWSER_DASHBOARD": True,
+        }
+        for key, default_value in others_defaults.items():
+            if key not in config["OTHERS"]:
+                config["OTHERS"][key] = default_value
+
+        # Убедимся, что раздел SWAPS содержит все необходимые поля
+        if "SWAPS" not in config:
+            config["SWAPS"] = {}
+
+        # Убедимся, что раздел BEBOP содержит все необходимые поля
+        if "BEBOP" not in config["SWAPS"]:
+            config["SWAPS"]["BEBOP"] = {}
+
+        bebop_defaults = {
+            "BALANCE_PERCENTAGE_TO_SWAP": [5, 10],
+            "SWAP_ALL_TO_ETH": False,
+        }
+        for key, default_value in bebop_defaults.items():
+            if key not in config["SWAPS"]["BEBOP"]:
+                config["SWAPS"]["BEBOP"][key] = default_value
+
+        # Убедимся, что раздел GTE содержит все необходимые поля
+        if "GTE" not in config["SWAPS"]:
+            config["SWAPS"]["GTE"] = {}
+
+        gte_defaults = {
+            "BALANCE_PERCENTAGE_TO_SWAP": [5, 10],
+            "SWAP_ALL_TO_ETH": True,
+            "SWAPS_AMOUNT": [3, 5],
+        }
+        for key, default_value in gte_defaults.items():
+            if key not in config["SWAPS"]["GTE"]:
+                config["SWAPS"]["GTE"][key] = default_value
+
+        # Убедимся, что раздел STAKINGS содержит все необходимые поля
+        if "STAKINGS" not in config:
+            config["STAKINGS"] = {}
+
+        # Убедимся, что раздел TEKO_FINANCE содержит все необходимые поля
+        if "TEKO_FINANCE" not in config["STAKINGS"]:
+            config["STAKINGS"]["TEKO_FINANCE"] = {}
+
+        teko_finance_defaults = {
+            "CHANCE_FOR_MINT_TOKENS": 50,
+            "BALANCE_PERCENTAGE_TO_STAKE": [5, 10],
+            "UNSTAKE": False,
+        }
+        for key, default_value in teko_finance_defaults.items():
+            if key not in config["STAKINGS"]["TEKO_FINANCE"]:
+                config["STAKINGS"]["TEKO_FINANCE"][key] = default_value
+
+        # Убедимся, что раздел MINTS содержит все необходимые поля
+        if "MINTS" not in config:
+            config["MINTS"] = {}
+
+        # Убедимся, что раздел XL_MEME содержит все необходимые поля
+        if "XL_MEME" not in config["MINTS"]:
+            config["MINTS"]["XL_MEME"] = {}
+
+        xl_meme_defaults = {
+            "BALANCE_PERCENTAGE_TO_BUY": [2, 5],
+            "CONTRACTS_TO_BUY": [],
+        }
+        for key, default_value in xl_meme_defaults.items():
+            if key not in config["MINTS"]["XL_MEME"]:
+                config["MINTS"]["XL_MEME"][key] = default_value
+
+        # Убедимся, что раздел OMNIHUB содержит все необходимые поля
+        if "OMNIHUB" not in config["MINTS"]:
+            config["MINTS"]["OMNIHUB"] = {}
+
+        omnihub_defaults = {
+            "MAX_PRICE_TO_MINT": 0.00011,
+        }
+        for key, default_value in omnihub_defaults.items():
+            if key not in config["MINTS"]["OMNIHUB"]:
+                config["MINTS"]["OMNIHUB"][key] = default_value
+
+        # Убедимся, что раздел RAINMAKR содержит все необходимые поля
+        if "RAINMAKR" not in config["MINTS"]:
+            config["MINTS"]["RAINMAKR"] = {}
+
+        rainmakr_defaults = {
+            "AMOUNT_OF_ETH_TO_BUY": [0.00013, 0.00015],
+            "CONTRACTS_TO_BUY": [],
+        }
+        for key, default_value in rainmakr_defaults.items():
+            if key not in config["MINTS"]["RAINMAKR"]:
+                config["MINTS"]["RAINMAKR"][key] = default_value
+
+        # Убедимся, что раздел CRUSTY_SWAP содержит все необходимые поля
+        if "CRUSTY_SWAP" not in config:
+            config["CRUSTY_SWAP"] = {}
+
+        crusty_swap_defaults = {
+            "NETWORKS_TO_REFUEL_FROM": ["Arbitrum", "Optimism", "Base"],
+            "AMOUNT_TO_REFUEL": [0.0001, 0.00015],
+            "MINIMUM_BALANCE_TO_REFUEL": 99999,
+            "WAIT_FOR_FUNDS_TO_ARRIVE": True,
+            "MAX_WAIT_TIME": 999999,
+            "BRIDGE_ALL": False,
+            "BRIDGE_ALL_MAX_AMOUNT": 0.01,
+        }
+        for key, default_value in crusty_swap_defaults.items():
+            if key not in config["CRUSTY_SWAP"]:
+                config["CRUSTY_SWAP"][key] = default_value
+
+        # Убедимся, что раздел EXCHANGES содержит все необходимые поля
+        if "EXCHANGES" not in config:
+            config["EXCHANGES"] = {}
+
+        exchanges_defaults = {
+            "name": "OKX",
+            "apiKey": "",
+            "secretKey": "",
+            "passphrase": "",
+            "withdrawals": [],
+        }
+        for key, default_value in exchanges_defaults.items():
+            if key not in config["EXCHANGES"]:
+                config["EXCHANGES"][key] = default_value
+
+        # Убедимся, что массив withdrawals существует и содержит хотя бы один элемент с дефолтными значениями
+        if not config["EXCHANGES"]["withdrawals"]:
+            config["EXCHANGES"]["withdrawals"] = [
+                {
+                    "currency": "ETH",
+                    "networks": ["Arbitrum", "Optimism"],
+                    "min_amount": 0.0003,
+                    "max_amount": 0.0004,
+                    "max_balance": 0.005,
+                    "wait_for_funds": True,
+                    "max_wait_time": 99999,
+                    "retries": 3,
+                }
+            ]
 
         with open(CONFIG_PATH, "w") as file:
             yaml.dump(config, file, default_flow_style=False, sort_keys=False)

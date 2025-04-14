@@ -4,6 +4,10 @@ import primp
 import random
 import asyncio
 
+from src.model.projects.mints.rarible.instance import Rarible
+from src.model.projects.swaps.rainmakr import Rainmakr
+from src.model.projects.deploy.owlto.instance import Owlto
+from src.model.projects.other.hopnetwork.instance import HopNetwork
 from src.model.projects.deploy.easynode.instance import EasyNode
 from src.model.projects.deploy.mintair.instance import Mintair
 from src.model.projects.mints.omnihub.instance import OmniHub
@@ -365,6 +369,48 @@ class Start:
                 self.wallet,
             )
             return await easynode.deploy_contract()
+        
+        if task == "hopnetwork":
+            hopnetwork = HopNetwork(
+                self.account_index,
+                self.session,
+                self.megaeth_web3,
+                self.config,
+                self.wallet,
+                self.private_key,
+            )
+            return await hopnetwork.waitlist()
+        
+        if task == "owlto":
+            owlto = Owlto(
+                self.account_index,
+                self.session,
+                self.megaeth_web3,
+                self.config,
+                self.wallet,
+            )
+            return await owlto.deploy_contract()
+        
+        if task == "rainmakr":
+            rainmakr = Rainmakr(
+                self.account_index,
+                self.session,
+                self.megaeth_web3,
+                self.config,
+                self.wallet,
+                self.private_key,
+            )
+            return await rainmakr.buy_meme()
+        
+        if task == "rarible":
+            rarible = Rarible(
+                self.account_index,
+                self.session,
+                self.megaeth_web3,
+                self.config,
+                self.wallet,
+            )
+            return await rarible.mint_nft()
         
         logger.error(f"{self.account_index} | Task {task} not found")
         return False
