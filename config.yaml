@@ -36,7 +36,7 @@ SETTINGS:
     
     # random pause before start of every account
     # to make sure that all accounts will be started at different times
-    RANDOM_INITIALIZATION_PAUSE: [5, 30]
+    RANDOM_INITIALIZATION_PAUSE: [3, 30]
     
     # if true, bot will send logs to telegram
     SEND_TELEGRAM_LOGS: false
@@ -56,7 +56,7 @@ FLOW:
 
 FAUCET:
     # CHEAPEST CAPTCHA SOLVER - https://t.me/solvium_crypto_bot
-    SOLVIUM_API_KEY: xxxxxxxxxxxxxxxxxxxxxx
+    SOLVIUM_API_KEY: xxxxxxxxxxxxxxxxxxxxxxxx
 
     USE_CAPSOLVER: false
     CAPSOLVER_API_KEY: CAP-xxxxxxxxxxxxxxxx
@@ -88,6 +88,16 @@ STAKINGS:
         BALANCE_PERCENTAGE_TO_STAKE: [5, 10]
 
         UNSTAKE: false
+
+DEPLOY:
+    ZKCODEX:
+        DEPLOY_TOKEN: true
+        DEPLOY_NFT: true
+        DEPLOY_CONTRACT: true
+
+        # if true, the bot will perform only one action per launch randomly
+        # if false, the bot will perform all actions in random order
+        ONE_ACTION_PER_LAUNCH: false
 
 
 MINTS:

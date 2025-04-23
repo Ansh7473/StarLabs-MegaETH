@@ -432,12 +432,12 @@ class Rainmakr:
             random_contract = {}
             for contract in contracts:
                 try:
-                    if int(contract["numberTransaction"]) > 5:
+                    if int(contract["numberHolder"]) > 5 and "contractAddress" in contract and "name" in contract:
                         random_contract = contract
                         break
                 except:
                     pass
-
+            
             logger.info(
                 f"{self.account_index} | Will try to mint token {random_contract['name']} | {random_contract['contractAddress']}"
             )

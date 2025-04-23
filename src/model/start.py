@@ -4,6 +4,9 @@ import primp
 import random
 import asyncio
 
+from src.model.projects.domains import ConftApp
+from src.model.projects.deploy.zkcodex import ZkCodex
+from src.model.projects.other.superboard.instance import SuperBoard
 from src.model.projects.mints.rarible.instance import Rarible
 from src.model.projects.swaps.rainmakr import Rainmakr
 from src.model.projects.deploy.owlto.instance import Owlto
@@ -411,6 +414,39 @@ class Start:
                 self.wallet,
             )
             return await rarible.mint_nft()
+        
+        if task == "superboard":
+            superboard = SuperBoard(
+                self.account_index,
+                self.session,
+                self.megaeth_web3,
+                self.config,    
+                self.wallet,
+                self.private_key,
+            )
+            return await superboard.quests()
+        
+        if task == "conft_app":
+            conft_app = ConftApp(
+                self.account_index,
+                self.session,
+                self.megaeth_web3,
+                self.config,
+                self.wallet,
+                self.private_key,
+            )
+            return await conft_app.mint()
+        
+        if task == "zkcodex":
+            zkcodex = ZkCodex(
+                self.account_index,
+                self.session,
+                self.megaeth_web3,
+                self.config,
+                self.wallet,
+                self.private_key,
+            )
+            return await zkcodex.deploy()
         
         logger.error(f"{self.account_index} | Task {task} not found")
         return False

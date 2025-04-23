@@ -58,6 +58,7 @@ def load_config():
                 "SWAPS",
                 "STAKINGS",
                 "MINTS",
+                "DEPLOY",
                 "EXCHANGES",
                 "CRUSTY_SWAP",
             ]
@@ -237,6 +238,25 @@ def load_config():
                 if key not in config["CRUSTY_SWAP"]:
                     config["CRUSTY_SWAP"][key] = default_value
 
+            # Ensure DEPLOY has required fields
+            if "DEPLOY" not in config:
+                config["DEPLOY"] = {}
+
+            # Ensure ZKCODEX section exists in DEPLOY
+            if "ZKCODEX" not in config["DEPLOY"]:
+                config["DEPLOY"]["ZKCODEX"] = {}
+
+            zkcodex_defaults = {
+                "DEPLOY_TOKEN": True,
+                "DEPLOY_NFT": True,
+                "DEPLOY_CONTRACT": True,
+                "ONE_ACTION_PER_LAUNCH": False,
+            }
+
+            for key, default_value in zkcodex_defaults.items():
+                if key not in config["DEPLOY"]["ZKCODEX"]:
+                    config["DEPLOY"]["ZKCODEX"][key] = default_value
+
             # Ensure EXCHANGES has required fields
             if "EXCHANGES" not in config:
                 config["EXCHANGES"] = {}
@@ -289,6 +309,7 @@ def save_config(config):
             "SWAPS",
             "STAKINGS",
             "MINTS",
+            "DEPLOY",
             "EXCHANGES",
             "CRUSTY_SWAP",
         ]
@@ -461,6 +482,24 @@ def save_config(config):
         for key, default_value in crusty_swap_defaults.items():
             if key not in config["CRUSTY_SWAP"]:
                 config["CRUSTY_SWAP"][key] = default_value
+
+        # Убедимся, что раздел DEPLOY содержит все необходимые поля
+        if "DEPLOY" not in config:
+            config["DEPLOY"] = {}
+
+        # Убедимся, что раздел ZKCODEX содержит все необходимые поля
+        if "ZKCODEX" not in config["DEPLOY"]:
+            config["DEPLOY"]["ZKCODEX"] = {}
+
+        zkcodex_defaults = {
+            "DEPLOY_TOKEN": True,
+            "DEPLOY_NFT": True,
+            "DEPLOY_CONTRACT": True,
+            "ONE_ACTION_PER_LAUNCH": False,
+        }
+        for key, default_value in zkcodex_defaults.items():
+            if key not in config["DEPLOY"]["ZKCODEX"]:
+                config["DEPLOY"]["ZKCODEX"][key] = default_value
 
         # Убедимся, что раздел EXCHANGES содержит все необходимые поля
         if "EXCHANGES" not in config:

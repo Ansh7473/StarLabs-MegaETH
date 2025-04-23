@@ -79,6 +79,14 @@ class RainmakrConfig:
 
 
 @dataclass
+class ZkCodexConfig:
+    DEPLOY_TOKEN: bool
+    DEPLOY_NFT: bool
+    DEPLOY_CONTRACT: bool
+    ONE_ACTION_PER_LAUNCH: bool
+
+
+@dataclass
 class OmniHubConfig:
     MAX_PRICE_TO_MINT: float
 
@@ -87,6 +95,11 @@ class OmniHubConfig:
 class SwapsConfig:
     BEBOP: BebopConfig
     GTE: GteConfig
+
+
+@dataclass
+class DeployConfig:
+    ZKCODEX: ZkCodexConfig
 
 
 @dataclass
@@ -157,6 +170,7 @@ class Config:
     SWAPS: SwapsConfig
     STAKINGS: StakingsConfig
     MINTS: MintsConfig
+    DEPLOY: DeployConfig
     EXCHANGES: ExchangesConfig
     CRUSTY_SWAP: CrustySwapConfig
     WALLETS: WalletsConfig = field(default_factory=WalletsConfig)
@@ -299,6 +313,14 @@ class Config:
                 MAX_WAIT_TIME=data["CRUSTY_SWAP"]["MAX_WAIT_TIME"],
                 BRIDGE_ALL=data["CRUSTY_SWAP"]["BRIDGE_ALL"],
                 BRIDGE_ALL_MAX_AMOUNT=data["CRUSTY_SWAP"]["BRIDGE_ALL_MAX_AMOUNT"],
+            ),
+            DEPLOY=DeployConfig(
+                ZKCODEX=ZkCodexConfig(
+                    DEPLOY_TOKEN=data["DEPLOY"]["ZKCODEX"]["DEPLOY_TOKEN"],
+                    DEPLOY_NFT=data["DEPLOY"]["ZKCODEX"]["DEPLOY_NFT"],
+                    DEPLOY_CONTRACT=data["DEPLOY"]["ZKCODEX"]["DEPLOY_CONTRACT"],
+                    ONE_ACTION_PER_LAUNCH=data["DEPLOY"]["ZKCODEX"]["ONE_ACTION_PER_LAUNCH"],
+                ),
             ),
         )
 
