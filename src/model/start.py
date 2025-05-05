@@ -4,6 +4,8 @@ import primp
 import random
 import asyncio
 
+from src.model.projects.mints.morkie import Morkie
+from src.model.projects.mints.nerzo import Nerzo
 from src.model.projects.domains import ConftApp
 from src.model.projects.deploy.zkcodex import ZkCodex
 from src.model.projects.other.superboard.instance import SuperBoard
@@ -413,7 +415,7 @@ class Start:
                 self.config,
                 self.wallet,
             )
-            return await rarible.mint_nft()
+            return await rarible.buy_meme()
         
         if task == "superboard":
             superboard = SuperBoard(
@@ -447,6 +449,26 @@ class Start:
                 self.private_key,
             )
             return await zkcodex.deploy()
+        
+        if task == "nerzo_megaeth":
+            nerzo = Nerzo(
+                self.account_index,
+                self.session,
+                self.megaeth_web3,
+                self.config,
+                self.wallet,
+            )
+            return await nerzo.mint_megaeth()
+        
+        if task == "morkie_mega":
+            morkie = Morkie(
+                self.account_index,
+                self.session,
+                self.megaeth_web3,
+                self.config,
+                self.wallet,
+            )
+            return await morkie.mint_mega()
         
         logger.error(f"{self.account_index} | Task {task} not found")
         return False

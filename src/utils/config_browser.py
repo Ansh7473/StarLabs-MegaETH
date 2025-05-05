@@ -122,7 +122,6 @@ def load_config():
                 others_defaults = {
                     "SKIP_SSL_VERIFICATION": True,
                     "USE_PROXY_FOR_RPC": True,
-                    "ENABLE_BROWSER_DASHBOARD": True,
                 }
 
                 for key, default_value in others_defaults.items():
@@ -194,6 +193,18 @@ def load_config():
             for key, default_value in xl_meme_defaults.items():
                 if key not in config["MINTS"]["XL_MEME"]:
                     config["MINTS"]["XL_MEME"][key] = default_value
+
+            # Ensure RARIBLE section exists in MINTS
+            if "RARIBLE" not in config["MINTS"]:
+                config["MINTS"]["RARIBLE"] = {}
+
+            rarible_defaults = {
+                "CONTRACTS_TO_BUY": [],
+            }
+
+            for key, default_value in rarible_defaults.items():
+                if key not in config["MINTS"]["RARIBLE"]:
+                    config["MINTS"]["RARIBLE"][key] = default_value
 
             # Ensure OMNIHUB section exists in MINTS
             if "OMNIHUB" not in config["MINTS"]:
@@ -375,7 +386,6 @@ def save_config(config):
         others_defaults = {
             "SKIP_SSL_VERIFICATION": True,
             "USE_PROXY_FOR_RPC": True,
-            "ENABLE_BROWSER_DASHBOARD": True,
         }
         for key, default_value in others_defaults.items():
             if key not in config["OTHERS"]:
@@ -442,6 +452,17 @@ def save_config(config):
         for key, default_value in xl_meme_defaults.items():
             if key not in config["MINTS"]["XL_MEME"]:
                 config["MINTS"]["XL_MEME"][key] = default_value
+
+        # Убедимся, что раздел RARIBLE содержит все необходимые поля
+        if "RARIBLE" not in config["MINTS"]:
+            config["MINTS"]["RARIBLE"] = {}
+
+        rarible_defaults = {
+            "CONTRACTS_TO_BUY": [],
+        }
+        for key, default_value in rarible_defaults.items():
+            if key not in config["MINTS"]["RARIBLE"]:
+                config["MINTS"]["RARIBLE"][key] = default_value
 
         # Убедимся, что раздел OMNIHUB содержит все необходимые поля
         if "OMNIHUB" not in config["MINTS"]:
@@ -1874,6 +1895,18 @@ function renderConfig(config) {
                             isList: Array.isArray(v) && k === 'CONTRACTS_TO_BUY'
                         })), 
                         `${key}.XL_MEME`
+                    );
+                }
+
+                // RARIBLE
+                if (config[key]['RARIBLE']) {
+                    createCard(cardsContainer, 'Rarible Settings', 'palette', 
+                        Object.entries(config[key]['RARIBLE']).map(([k, v]) => ({ 
+                            key: k, 
+                            value: v, 
+                            isList: Array.isArray(v) && k === 'CONTRACTS_TO_BUY'
+                        })), 
+                        `${key}.RARIBLE`
                     );
                 }
 

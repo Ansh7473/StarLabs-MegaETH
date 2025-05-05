@@ -67,6 +67,11 @@ class TekoFinanceConfig:
 
 
 @dataclass
+class RaribleConfig:
+    CONTRACTS_TO_BUY: List[str]
+
+
+@dataclass
 class XLMemeConfig:
     BALANCE_PERCENTAGE_TO_BUY: List[float]
     CONTRACTS_TO_BUY: List[str]
@@ -110,6 +115,7 @@ class StakingsConfig:
 @dataclass
 class MintsConfig:
     XL_MEME: XLMemeConfig
+    RARIBLE: RaribleConfig
     OMNIHUB: OmniHubConfig
     RAINMAKR: RainmakrConfig
 
@@ -271,6 +277,9 @@ class Config:
                         "BALANCE_PERCENTAGE_TO_BUY"
                     ],
                     CONTRACTS_TO_BUY=data["MINTS"]["XL_MEME"]["CONTRACTS_TO_BUY"],
+                ),
+                RARIBLE=RaribleConfig(
+                    CONTRACTS_TO_BUY=data["MINTS"]["RARIBLE"]["CONTRACTS_TO_BUY"],
                 ),
                 OMNIHUB=OmniHubConfig(
                     MAX_PRICE_TO_MINT=data["MINTS"]["OMNIHUB"]["MAX_PRICE_TO_MINT"],
