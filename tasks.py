@@ -26,6 +26,7 @@ CONFT_APP = ["conft_app"]
 ZKCODEX = ["zkcodex"]
 NERZO_MEGAETH = ["nerzo_megaeth"]
 MORKIE_MEGA = ["morkie_mega"]
+NERZO_FLUFFLE = ["nerzo_fluffle"]
 """
 EN:
 You can create your own task with the modules you need 
@@ -95,4 +96,5 @@ conft_app - mint NFT and domain at https://conft.app/quests/6342 | Every mint co
 zkcodex - deploys on https://zkcodex.com/onchain/deploy
 nerzo_megaeth - mint megaeth at https://www.nerzo.xyz/megaeth
 morkie_mega - mint megaeth at https://morkie.xyz/mega
+nerzo_fluffle - mint fluffle at https://www.nerzo.xyz/fluffle
 """

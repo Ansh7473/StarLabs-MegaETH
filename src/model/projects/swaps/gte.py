@@ -195,9 +195,15 @@ class GteSwaps:
                 else:
                     logger.error(f"[{self.account_index}] Swap {i+1} failed")
                 
-                # Add a small delay between swaps
-                await asyncio.sleep(random.uniform(1, 3))
-            
+                random_pause = random.randint(
+                    self.config.SETTINGS.RANDOM_PAUSE_BETWEEN_ACTIONS[0],
+                    self.config.SETTINGS.RANDOM_PAUSE_BETWEEN_ACTIONS[1],
+                )
+                logger.info(
+                    f"{self.account_index} | Waiting {random_pause} seconds before next swap..."
+                )
+                await asyncio.sleep(random_pause)
+                
             # If SWAP_ALL_TO_ETH is enabled, swap all tokens to ETH after the loop
             if self.config.SWAPS.GTE.SWAP_ALL_TO_ETH:
                 logger.info(f"[{self.account_index}] SWAP_ALL_TO_ETH enabled, now swapping all remaining tokens to ETH")

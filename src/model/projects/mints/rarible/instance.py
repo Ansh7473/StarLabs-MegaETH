@@ -16,6 +16,41 @@ from src.utils.constants import EXPLORER_URL_MEGAETH
 
 CHAIN_ID = 6342  # From constants.py comment
 
+# Define the ABI for the mint function
+RARIBLE_ABI = [
+    {
+        "inputs": [
+            {"internalType": "address", "name": "account", "type": "address"},
+            {"internalType": "uint256", "name": "param2", "type": "uint256"},
+            {"internalType": "address", "name": "param3", "type": "address"},
+            {"internalType": "uint256", "name": "amount", "type": "uint256"},
+            {
+                "internalType": "tuple",
+                "name": "param5",
+                "type": "tuple",
+                "components": [
+                    {"internalType": "address", "name": "param1", "type": "address"},
+                    {"internalType": "uint256", "name": "param2", "type": "uint256"},
+                    {"internalType": "uint256", "name": "param3", "type": "uint256"},
+                    {"internalType": "address", "name": "param4", "type": "address"},
+                ],
+            },
+            {"internalType": "bytes", "name": "param6", "type": "bytes"},
+        ],
+        "name": "claim",
+        "outputs": [],
+        "stateMutability": "payable",
+        "type": "function",
+    },
+    {
+        "inputs": [{"internalType": "address", "name": "owner", "type": "address"}],
+        "name": "balanceOf",
+        "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+        "stateMutability": "view",
+        "type": "function",
+    },
+]
+
 
 class Rarible:
     def __init__(
@@ -45,7 +80,9 @@ class Rarible:
                     logger.error(f"{self.account_index} | Failed to get contract data")
                     return False
             else:
-                logger.error(f"{self.account_index} | No contract to buy from config for Rarible. Exiting...")
+                logger.error(
+                    f"{self.account_index} | No contract to buy from config for Rarible. Exiting..."
+                )
                 return False
                 random_token_contract = await self._get_random_token_for_mint()
                 if not random_token_contract:
@@ -65,16 +102,31 @@ class Rarible:
             # Contract address for minting
             contract_address = Web3.to_checksum_address(token_data["contract_address"])
 
-            # Prepare transaction
+            # Get wallet address
+            wallet_address = self.wallet.address
+            wallet_address_no_prefix = wallet_address[2:].lower()
+
+            # Token price in wei
+            price_in_wei = Web3.to_wei(token_data["price"], "ether")
+
+            # Instead of using contract.functions, directly use the function selector and encoded parameters
+            # This is the claim function selector with the necessary parameters
+            # Using the example payload provided but replacing the address with the current wallet
+            payload = (
+                "0x84bb1e42"
+                + "000000000000000000000000"
+                + wallet_address_no_prefix
+                + "0000000000000000000000000000000000000000000000000000000000000001000000000000000000000000eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+                + price_in_wei.to_bytes(32, byteorder="big").hex()
+                + "00000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000016000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+            )
+
+            # Prepare basic transaction similar to cap_app.py
             tx = {
-                "from": self.wallet.address,
+                "from": wallet_address,
                 "to": contract_address,
-                "value": Web3.to_wei(token_data["price"], "ether"),
-                "data": "0x1249c58b",  # Mint function selector
-                "chainId": CHAIN_ID,
-                "nonce": await self.web3.web3.eth.get_transaction_count(
-                    self.wallet.address
-                ),
+                "data": payload,
+                "value": price_in_wei,
             }
 
             # Estimate gas
@@ -87,6 +139,10 @@ class Rarible:
             # Get gas price parameters
             gas_params = await self.web3.get_gas_params()
             tx.update(gas_params)
+
+            # Add chain ID and nonce
+            tx["chainId"] = CHAIN_ID
+            tx["nonce"] = await self.web3.web3.eth.get_transaction_count(wallet_address)
 
             # Sign transaction
             signed_tx = self.web3.web3.eth.account.sign_transaction(tx, self.wallet.key)
@@ -232,7 +288,7 @@ class Rarible:
             )
 
             html_content = response.text
-            
+
             quote = '{\\"id\\":\\"MEGAETHTESTNET:' + contract_address + '\\",'
 
             json_data = quote + html_content.split(quote)[1].split('\\n"')[0]

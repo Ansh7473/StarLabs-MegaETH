@@ -450,7 +450,7 @@ class Start:
             )
             return await zkcodex.deploy()
         
-        if task == "nerzo_megaeth":
+        if task.startswith("nerzo_"):
             nerzo = Nerzo(
                 self.account_index,
                 self.session,
@@ -458,8 +458,11 @@ class Start:
                 self.config,
                 self.wallet,
             )
-            return await nerzo.mint_megaeth()
-        
+            if task == "nerzo_megaeth":
+                return await nerzo.mint_megaeth()
+            elif task == "nerzo_fluffle":
+                return await nerzo.mint_fluffle()
+            
         if task == "morkie_mega":
             morkie = Morkie(
                 self.account_index,

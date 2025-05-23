@@ -77,6 +77,15 @@ class TekoFinance:
                 await self._request_faucet_token(
                     payload["token"], payload["payload"], payload["contract"]
                 )
+                random_pause = random.randint(
+                    self.config.SETTINGS.RANDOM_PAUSE_BETWEEN_ACTIONS[0],
+                    self.config.SETTINGS.RANDOM_PAUSE_BETWEEN_ACTIONS[1],
+                )
+                logger.info(
+                    f"{self.account_index} | Waiting {random_pause} seconds before next faucet request..."
+                )
+                await asyncio.sleep(random_pause)
+
 
             return True
         except Exception as e:
